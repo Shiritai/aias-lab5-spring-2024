@@ -7,7 +7,7 @@ package="$1"
 module="$2"
 parameter="$3"
 
-cat <<EOF > _temphelper.scala
+cat <<EOF >_temphelper.scala
 package _temphelper
 
 import ${package}._
