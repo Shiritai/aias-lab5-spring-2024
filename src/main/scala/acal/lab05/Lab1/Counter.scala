@@ -11,8 +11,7 @@ class Counter(upTo: Int) extends Module {
 
   val res = Wire(UInt((4 + 1).W))
 
-  AdvanceCounter(from = 0, to = upTo, step = 1)(
-    value = res)
+  AdvanceCounter(from = 0, to = upTo)(value = res)
 
   SevenSeg(res, io.display)
 }

@@ -5,20 +5,18 @@ import chisel3.util._
 import acal.lab05.Lab1.SevenSeg
 
 /**
- * `revert` (bool): `1` mean count according to
- * `step`, `0` means count according to `-step`
+ * `revert` (bool): `0` mean up-count and `1` means
+ * count according to down-count
  */
-class AdvanceCounter(from: Int = 0,
-                     to: Int = 9,
-                     step: Int = 1)
+class AdvanceCounter(from: Int = 0, to: Int = 9)
     extends Module {
-
+  // step of each up/down count
+  val step      = 1
   val msgPrefix = "[AdvanceCounter]"
 
-  assert(
-    step >= 0,
-    s"${msgPrefix} step of counter must >= 0, but get ${step}")
-
+  /**
+   * Get width of given integer
+   */
   def getWidth(n: Int) = n.U.getWidth
   // Width of this counter
   val cntWidth =
@@ -67,18 +65,15 @@ class AdvanceCounter(from: Int = 0,
 }
 
 object AdvanceCounter {
-  def apply(from: Int = 0,
-            to:   Int = 9,
-            step: Int = 1)(value: UInt,
-                           reset:    Bool = false.B,
-                           enable:   Bool = true.B,
-                           revert:   Bool = false.B,
-                           toInject: Bool = false.B,
-                           inject:   UInt = 0.U) = {
+  def apply(from: Int = 0, to: Int = 9)(
+      value:    UInt,
+      reset:    Bool = false.B,
+      enable:   Bool = true.B,
+      revert:   Bool = false.B,
+      toInject: Bool = false.B,
+      inject:   UInt = 0.U) = {
     val ac = Module(
-      new AdvanceCounter(from = from,
-                         to = to,
-                         step = step))
+      new AdvanceCounter(from = from, to = to))
 
     ac.io.reset    := reset
     ac.io.enable   := enable
