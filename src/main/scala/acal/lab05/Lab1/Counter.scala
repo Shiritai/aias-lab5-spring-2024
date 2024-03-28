@@ -2,18 +2,18 @@ package acal.lab05.Lab1
 
 import chisel3._
 import chisel3.util._
+import acal.lab05.Hw1.AdvanceCounter
 
 class Counter(upTo: Int) extends Module {
   val io = IO(new Bundle {
     val display = Output(UInt(7.W))
   })
 
-  val cntReg = RegInit(0.U(4.W))
-  cntReg := Mux(cntReg === upTo.U,
-                0.U,
-                cntReg + (1.U))
+  val res = Wire(SInt((4 + 1).W))
 
-  val ss = Module(new SevenSeg())
-  ss.io.num  := cntReg
-  io.display := ss.io.display
+  AdvanceCounter(from = 0, to = upTo, step = 1)(
+    true.B,
+    res)
+
+  SevenSeg(res.asUInt, io.display)
 }
