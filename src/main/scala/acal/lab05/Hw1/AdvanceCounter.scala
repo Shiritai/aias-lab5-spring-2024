@@ -13,7 +13,13 @@ class AdvanceCounter(from: Int = 0,
                      step: Int = 1)
     extends Module {
 
-  def getWidth(n: Int) = n.S.getWidth
+  val msgPrefix = "[AdvanceCounter]"
+
+  assert(
+    step >= 0,
+    s"${msgPrefix} step of counter must >= 0, but get ${step}")
+
+  def getWidth(n: Int) = n.U.getWidth
   // Width of this counter
   val cntWidth =
     Math.max(getWidth(from), getWidth(to))
@@ -25,24 +31,24 @@ class AdvanceCounter(from: Int = 0,
     .toInt
 
   println(
-    s"[AdvanceCounter] initialize cntWidth with: ${cntWidth}")
+    s"${msgPrefix} initialize cntWidth with: ${cntWidth}")
 
   val io = IO(new Bundle {
     // counting direction
     val isForward = Input(Bool())
     // output width determined by SevenSeg
-    val value = Output(SInt(cntWidth.W))
+    val value = Output(UInt(cntWidth.W))
   })
 
   val cntReg = RegInit(
     Mux(io.isForward,
-        from.S(cntWidth.W),
-        to.S(cntWidth.W)))
+        from.U(cntWidth.W),
+        to.U(cntWidth.W)))
 
   cntReg := Mux(
     io.isForward,
-    Mux(cntReg === to.S, from.S, cntReg + step.S),
-    Mux(cntReg === from.S, to.S, cntReg - step.S)
+    Mux(cntReg === to.U, from.U, cntReg + step.U),
+    Mux(cntReg === from.U, to.U, cntReg - step.U)
   )
 
   io.value := cntReg
@@ -52,8 +58,7 @@ object AdvanceCounter {
   def apply(from: Int = 0,
             to:   Int = 9,
             step: Int = 1)(isForward: Bool,
-                           value: SInt) = {
-    // val ac = Module(new AdvanceCounter(from, to, step))
+                           value: UInt) = {
     val ac = Module(
       new AdvanceCounter(from = from,
                          to = to,

@@ -9,11 +9,11 @@ class Counter(upTo: Int) extends Module {
     val display = Output(UInt(7.W))
   })
 
-  val res = Wire(SInt((4 + 1).W))
+  val res = Wire(UInt((4 + 1).W))
 
   AdvanceCounter(from = 0, to = upTo, step = 1)(
     true.B,
     res)
 
-  SevenSeg(res.asUInt, io.display)
+  SevenSeg(res, io.display)
 }
