@@ -4,20 +4,22 @@ import scala.util.Try
 import scala.util.Random
 import scala.sys.process._
 
-class Stack[T] {
+class GoldenStack[T] {
   var stack = List[T]()
+  var peak  = 0
 
   /**
    * Push an element at the front
    */
   def push(e: T) = {
     stack = e :: stack
+    peak  = Math.max(peak, stack.size)
   }
 
   /**
    * Pop the front element
    */
-  def pop = {
+  def pop() = {
     val ret = stack(0)
     stack = stack.tail
     ret
@@ -44,11 +46,12 @@ class GoldenCalculator {
   val opOrder =
     Map('+' -> 0, '-' -> 0, '*' -> 1, '(' -> -1)
 
-  var symStack = new Stack[Char]() // symbol stack
-  var endLv = new Stack[Int]() // stack of end level
-  var postfix  = new Stack[Char]()
-  var opCnt    = 0     // numbers of operators
-  var numCnt   = 0     // numbers of number
+  var symStack = new GoldenStack[Char]() // symbol stack
+  var endLv   = new GoldenStack[Int]() // end level stack
+  var postfix = new GoldenStack[Char]()
+  var evaluator = new GoldenStack[BigInt]
+  var opCnt     = 0 // numbers of operators
+  var numCnt    = 0 // numbers of number
   var wasNumIn = false // were we keying in a number
   var level    = 0     // level of ()
   val numEndSignal =
@@ -194,37 +197,35 @@ class GoldenCalculator {
           symStack)}\t\t endLv: ${peek(endLv)}" :: logger
   }
 
-  def peek[T](st: Stack[T]) =
+  def peek[T](st: GoldenStack[T]) =
     st.stack.reverse.mkString(" ")
 
   def peek = postfix.stack.reverse.mkString(" ")
 
   def evaluate = {
-    var st = new Stack[BigInt]
-    var n  = ""
+    var n = ""
 
     for (c <- postfix.stack.reverse) {
       if (c.isDigit) {
         n = s"${n}${c.asDigit}"
       } else if (c == numEndSignal) {
-        st.push(BigInt(n))
+        evaluator.push(BigInt(n))
         n = ""
       } else {
-        val b = st.pop
-        val a = st.pop
+        val b = evaluator.pop
+        val a = evaluator.pop
 
         c match {
-          case '+' => st.push(a + b)
-          case '-' => st.push(a - b)
-          case '*' => st.push(a * b)
+          case '+' => evaluator.push(a + b)
+          case '-' => evaluator.push(a - b)
+          case '*' => evaluator.push(a * b)
           case _ =>
             throw new Exception(
               s"[evaluate] Bad operator: ${c}")
         }
       }
     }
-
-    st.stack.reduce((last, e) => last + e)
+    evaluator.peek
   }
 
   def dumpLog = {
@@ -233,13 +234,19 @@ class GoldenCalculator {
 }
 
 object GoldenCalculator {
-  def generateRandomExpression()
-      : (String, String) = {
+  var symStackPeak  = 0
+  var endLvPeak     = 0
+  var postfixPeak   = 0
+  var evaluatorPeak = 0
+  var testLenPeak   = 0
+
+  def generateRandomExpression(
+      parts: Int): (String, String) = {
     var res   = ""
     var last  = '_'
     var level = 0
     var rnd = new Random(System.currentTimeMillis())
-    var cnt = 100
+    var cnt = parts
 
     def pushEle(s: String) = {
       res += s.toString
@@ -262,7 +269,7 @@ object GoldenCalculator {
       val op = rnd.nextInt(8)
       op match {
         case 0 => { // parenthesis
-          if (rnd.nextInt(3) == 0) {
+          if (rnd.nextInt(5) < 2) {
             if (
               res.isEmpty || (!last.isDigit && last != ')')
             ) {
@@ -351,6 +358,14 @@ object GoldenCalculator {
         println(
           s"\nexception: ${e.getMessage}\n${gc.dumpLog}")
     }
+
+    symStackPeak =
+      Math.max(symStackPeak, gc.symStack.peak)
+    endLvPeak = Math.max(endLvPeak, gc.endLv.peak)
+    postfixPeak =
+      Math.max(postfixPeak, gc.postfix.peak)
+    evaluatorPeak =
+      Math.max(evaluatorPeak, gc.evaluator.peak)
   }
 
   def normalTest() = {
@@ -413,13 +428,16 @@ object GoldenCalculator {
     cmd.!! // captures the output
   }
 
-  def randomTest(times: Int = 1000) = {
+  def randomTest(times: Int = 100,
+                 parts: Int = 100) = {
     for (_ <- 0 until times) {
       val (rndExp, res) =
-        generateRandomExpression()
+        generateRandomExpression(parts)
       val golden = BigInt(res.strip())
       // print(s"${rndExp} -> ${golden}: ")
       singleTest(rndExp, golden)
+      testLenPeak =
+        Math.max(testLenPeak, rndExp.size)
       // var success = false
       // while (!success) {
       //   try {
@@ -434,6 +452,9 @@ object GoldenCalculator {
 
   def main(args: Array[String]) = {
     normalTest()
-    randomTest(1000)
+    randomTest(1000, 100)
+    randomTest(10, 1000)
+    println(
+      s"Statistic: symStackPeak: ${symStackPeak}, endLvPeak: ${endLvPeak}, postfixPeak: ${postfixPeak}, evaluatorPeak: ${evaluatorPeak}, testLenPeak: ${testLenPeak}")
   }
 }
