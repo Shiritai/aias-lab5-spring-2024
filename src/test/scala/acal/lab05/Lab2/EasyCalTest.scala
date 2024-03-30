@@ -25,21 +25,21 @@ class EasyCalTest(dut: EasyCal)
   )
 
   "1234-234=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   expect(dut.io.value.bits, 1000)
   step(1)
 
   "12*5=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   expect(dut.io.value.bits, 60)
   step(1)
 
   "3-18=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   // expect(dut.io.value.bits,-15)

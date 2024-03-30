@@ -25,7 +25,7 @@ class IntGenTest(dut: IntGen)
   )
 
   "1234=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   expect(dut.io.value.bits, 1234)
@@ -37,7 +37,7 @@ class IntGenTest(dut: IntGen)
   step(1)
 
   Seq('5', '4', '3', '2', '=').foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   expect(dut.io.value.bits,

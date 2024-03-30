@@ -38,7 +38,7 @@ class CpxCalTest(dut: CpxCal)
   golden.zipWithIndex.foreach {
     case ((input, output), index) =>
       input.foreach { ch =>
-        poke(dut.io.key_in, dict(ch))
+        poke(dut.io.keyIn, dict(ch))
         step(1)
       }
       while (peek(dut.io.value.valid) == 0) {

@@ -5,7 +5,7 @@ import chisel3.util._
 
 class CpxCal extends Module {
   val io = IO(new Bundle {
-    val key_in = Input(UInt(4.W))
+    val keyIn = Input(UInt(4.W))
     val value  = Output(Valid(UInt(32.W)))
   })
 

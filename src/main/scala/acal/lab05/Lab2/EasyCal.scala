@@ -5,22 +5,22 @@ import chisel3.util._
 
 class EasyCal extends Module {
   val io = IO(new Bundle {
-    val key_in = Input(UInt(4.W))
+    val keyIn = Input(UInt(4.W))
     val value  = Output(Valid(UInt(32.W)))
   })
 
   // Wire Declaration===================================
   val operator = WireDefault(false.B)
-  operator := io.key_in >= 10.U && io.key_in <= 12.U
+  operator := io.keyIn >= 10.U && io.keyIn <= 12.U
 
   val num = WireDefault(false.B)
-  num := io.key_in < 10.U
+  num := io.keyIn < 10.U
 
   val equal = WireDefault(false.B)
-  equal := io.key_in === 15.U
+  equal := io.keyIn === 15.U
 
   // Reg Declaration====================================
-  val in_buffer = RegNext(io.key_in)
+  val in_buffer = RegNext(io.keyIn)
   val src1      = RegInit(0.U(32.W))
   val op        = RegInit(0.U(2.W))
   val src2      = RegInit(0.U(32.W))

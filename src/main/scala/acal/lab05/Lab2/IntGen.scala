@@ -5,12 +5,12 @@ import chisel3.util._
 
 class IntGen extends Module {
   val io = IO(new Bundle {
-    val key_in = Input(UInt(4.W))
+    val keyIn = Input(UInt(4.W))
     val value  = Output(Valid(UInt(32.W)))
   })
 
   val equal = WireDefault(false.B)
-  equal := io.key_in === 15.U
+  equal := io.keyIn === 15.U
 
   val sIdle :: sAccept :: sEqual :: Nil = Enum(3)
   val state = RegInit(sIdle)
@@ -27,7 +27,7 @@ class IntGen extends Module {
     }
   }
 
-  val in_buffer = RegNext(io.key_in)
+  val in_buffer = RegNext(io.keyIn)
 
   val number = RegInit(0.U(32.W))
   when(state === sAccept) {

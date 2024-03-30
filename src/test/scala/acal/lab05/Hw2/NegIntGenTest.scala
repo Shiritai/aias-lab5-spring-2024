@@ -29,7 +29,7 @@ class NegIntGenTest(dut: NegIntGen)
 
   // Test 1
   "(-1234)=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (!peek(dut.io.value.valid)) { step(1) }
@@ -46,7 +46,7 @@ class NegIntGenTest(dut: NegIntGen)
   // Test 2
   Seq('(', '-', '5', '4', '2', '1', ')', '=')
     .foreach { x =>
-      poke(dut.io.key_in, dict(x))
+      poke(dut.io.keyIn, dict(x))
       step(1)
     }
   while (!peek(dut.io.value.valid)) { step(1) }
@@ -61,7 +61,7 @@ class NegIntGenTest(dut: NegIntGen)
 
   // Test 3
   "5487=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (!peek(dut.io.value.valid)) { step(1) }

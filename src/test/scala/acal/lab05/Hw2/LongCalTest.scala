@@ -30,7 +30,7 @@ class LongCalTest(dut: LongCal)
 
   // Test 1
   "(-15)-15-(-15)+(-15)=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (peek(dut.io.value.valid) == 0) {
@@ -47,7 +47,7 @@ class LongCalTest(dut: LongCal)
 
   // Test 2
   "17-16+(-15)-14+13-12+(-11)=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (peek(dut.io.value.valid) == 0) {
@@ -64,7 +64,7 @@ class LongCalTest(dut: LongCal)
 
   // Test 3
   "(-15)=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (peek(dut.io.value.valid) == 0) {
@@ -81,7 +81,7 @@ class LongCalTest(dut: LongCal)
 
   // Test 4
   "15=".foreach { x =>
-    poke(dut.io.key_in, dict(x))
+    poke(dut.io.keyIn, dict(x))
     step(1)
   }
   while (peek(dut.io.value.valid) == 0) {
