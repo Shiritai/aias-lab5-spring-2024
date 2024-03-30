@@ -46,11 +46,13 @@ class GoldenCalculator {
 
   var symStack = new Stack[Char]() // symbol stack
   var endLv = new Stack[Int]() // stack of end level
-  var postfix  = new Stack[String]()
+  var postfix  = new Stack[Char]()
   var opCnt    = 0     // numbers of operators
   var numCnt   = 0     // numbers of number
   var wasNumIn = false // were we keying in a number
   var level    = 0     // level of ()
+  val numEndSignal =
+    '(' // end signal of a number in postfix
 
   var logger = List[String]()
 
@@ -82,6 +84,7 @@ class GoldenCalculator {
    */
   def checkAndEndSomeNumber = {
     if (wasNumIn) {
+      postfix.push(numEndSignal)
       numCnt += 1
       wasNumIn = false
       checkAndEndLevelPair
@@ -104,8 +107,8 @@ class GoldenCalculator {
       !symStack.isEmpty && opOrder(
         symStack.peek) >= opOrder(c)
     ) {
-      val toPush = symStack.pop.toString
-      if (toPush == "(") {
+      val toPush = symStack.pop
+      if (toPush == '(') {
         throw new Exception(
           s"[pushOperator] Before pushing ${c}, pushed ${pushList}, pop and try to push a (")
       }
@@ -122,8 +125,8 @@ class GoldenCalculator {
   def flushPairedParenthesis(
       onlyClearLevelMark: Boolean) = {
     while (symStack.peek != '(') {
-      val toPush = symStack.pop.toString
-      if (toPush == "(") {
+      val toPush = symStack.pop
+      if (toPush == '(') {
         throw new Exception(
           "[flushPairedParenthesis] Try to push a (")
       }
@@ -158,7 +161,8 @@ class GoldenCalculator {
         if (opCnt == numCnt) {
           startLevelPair(withLevelMark = true)
           // push a dummy zero to kill dangling zero
-          postfix.push("0")
+          postfix.push('0')
+          postfix.push(numEndSignal)
           numCnt += 1
           // wasNumIn = false // this line should be useless
           // finally, append dangling operator (+ or -)
@@ -176,16 +180,12 @@ class GoldenCalculator {
       case '=' => {
         checkAndEndSomeNumber
         while (!symStack.isEmpty) {
-          postfix.push(symStack.pop.toString)
+          postfix.push(symStack.pop)
         }
         opCnt += 1
       }
       case _ => {
-        // for numbers, just push it
-        postfix.push(wasNumIn match {
-          case true  => s"${postfix.pop}${c}"
-          case false => s"${c}"
-        })
+        postfix.push(c)
         wasNumIn = true
       }
     }
@@ -201,21 +201,25 @@ class GoldenCalculator {
 
   def evaluate = {
     var st = new Stack[BigInt]
-    for (s <- postfix.stack.reverse) {
-      Try(BigInt(s)).toOption match {
-        case Some(value) => st.push(value)
-        case None => {
-          val b = st.pop
-          val a = st.pop
+    var n  = ""
 
-          s match {
-            case "+" => st.push(a + b)
-            case "-" => st.push(a - b)
-            case "*" => st.push(a * b)
-            case _ =>
-              throw new Exception(
-                s"[evaluate] Bad operator: ${s}")
-          }
+    for (c <- postfix.stack.reverse) {
+      if (c.isDigit) {
+        n = s"${n}${c.asDigit}"
+      } else if (c == numEndSignal) {
+        st.push(BigInt(n))
+        n = ""
+      } else {
+        val b = st.pop
+        val a = st.pop
+
+        c match {
+          case '+' => st.push(a + b)
+          case '-' => st.push(a - b)
+          case '*' => st.push(a * b)
+          case _ =>
+            throw new Exception(
+              s"[evaluate] Bad operator: ${c}")
         }
       }
     }
@@ -241,6 +245,17 @@ object GoldenCalculator {
       res += s.toString
       last = s.last
       cnt -= 1
+    }
+
+    /**
+     * @brief
+     *   Generate next bit integer in string format
+     *   with maximal value: 10^24
+     */
+    def genNextInt() = {
+      (0 until 4)
+        .map(_ => rnd.nextInt(1000000).toString)
+        .reduce((a, b) => a + b)
     }
 
     while (cnt > 0) {
@@ -285,20 +300,20 @@ object GoldenCalculator {
           }
         }
         case _ => {
-          if (last != '0' && last != ')') {
-            pushEle(rnd.nextInt(10).toString)
+          if (!last.isDigit && last != ')') {
+            pushEle(genNextInt())
           }
         }
       }
     }
 
     if (last == '+' || last == '-' || last == '*') {
-      pushEle(rnd.nextInt(100).toString)
+      pushEle(genNextInt())
     }
 
     if (level != 0) {
       if (!last.isDigit && last != ')') {
-        pushEle(rnd.nextInt(100).toString)
+        pushEle(genNextInt())
       }
       pushEle(")" * level)
     }
@@ -316,7 +331,6 @@ object GoldenCalculator {
     log += s"${test._1} ==> "
 
     try {
-
       for (c <- test._1) {
         gc.keyIn(gc.enc.indexOf(c))
       }
