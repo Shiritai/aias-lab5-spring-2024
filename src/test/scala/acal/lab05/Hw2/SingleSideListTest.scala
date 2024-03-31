@@ -4,22 +4,26 @@ import chisel3._
 import chisel3.util._
 import chisel3.iotesters.{Driver, PeekPokeTester}
 import scala.util.Random
-import golden.GoldenStack
+import acal.lab05.Hw2.golden._
 
-class StackTest(st: Stack, width: Int, depth: Int)
+class SingleSideListTest[T <: Module with SingleSideList](
+    st:    T,
+    gst:   GoldenSingleIoList[Int],
+    width: Int,
+    depth: Int)
     extends PeekPokeTester(st) {
-  var gst    = new GoldenStack[Int]()
   var genRnd = new Random()
+  val opKind = 4
   val push :: peek :: pop :: idle :: Nil =
-    Enum(4).map(n => n.toInt)
+    Enum(opKind).map(n => n.toInt)
 
   for (_ <- 0 until 100) {
-    val op = genRnd.nextInt(4)
+    val op = genRnd.nextInt(opKind)
 
     op match {
       case `push` => { // push
         if (gst.size < depth) {
-          val n = genRnd.nextInt(5)
+          val n = genRnd.nextInt(1 << width)
           gst.push(n)
           poke(st.io.en,     true)
           poke(st.io.push,     true)
@@ -63,12 +67,27 @@ class StackTest(st: Stack, width: Int, depth: Int)
   }
 }
 
-object StackTest extends App {
-  val width = 6
+object SingleSideListTest extends App {
+  val width = 4
   val depth = 1000
 
-  Driver.execute(args,
-                 () => new Stack(width, depth)) {
-    c: Stack => new StackTest(c, width, depth)
+  Driver.execute(
+    args,
+    () => new Stack(width, depth)) { st: Stack =>
+    new SingleSideListTest[Stack](
+      st,
+      new GoldenStack[Int](),
+      width,
+      depth)
+  }
+
+  Driver.execute(
+    args,
+    () => new Queue(width, depth)) { q: Queue =>
+    new SingleSideListTest[Queue](
+      q,
+      new GoldenQueue[Int](),
+      width,
+      depth)
   }
 }

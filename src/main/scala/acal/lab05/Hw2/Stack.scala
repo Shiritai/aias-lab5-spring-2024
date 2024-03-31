@@ -3,8 +3,10 @@ package acal.lab05.Hw2
 import chisel3._
 import chisel3.util.log2Ceil
 
-class Stack(width: Int, depth: Int) extends Module {
-  val io = IO(new Bundle {
+class Stack(width: Int, depth: Int)
+    extends Module with SingleSideList {
+
+  val io = IO(new SingleSideListIO {
     val push   = Input(Bool())
     val pop    = Input(Bool())
     val en     = Input(Bool())
@@ -13,21 +15,22 @@ class Stack(width: Int, depth: Int) extends Module {
     val dataOut = Output(UInt(width.W))
   })
 
-  val stackMem = Mem(depth, UInt(width.W))
-  val sp       = RegInit(0.U(log2Ceil(depth + 1).W))
-  val out      = RegInit(0.U(width.W))
+  val mem = Mem(depth, UInt(width.W))
+
+  val sp  = RegInit(0.U(log2Ceil(depth + 1).W))
+  val out = RegInit(0.U(width.W))
 
   println(s"depth: ${depth}")
 
   when(io.en) {
     when(io.push && (sp < depth.asUInt)) {
-      stackMem(sp) := io.dataIn
-      sp           := sp + 1.U
+      mem(sp) := io.dataIn
+      sp      := sp + 1.U
     }.elsewhen(io.pop && (sp > 0.U)) {
       sp := sp - 1.U
     }
     when(sp > 0.U) {
-      out := stackMem(sp - 1.U)
+      out := mem(sp - 1.U)
     }
   }
 
