@@ -45,8 +45,8 @@ class GoldenCalculator {
    */
   def checkAndEndLevelPair = {
     while (!endLv.isEmpty && level == endLv.peek) {
-      flushPairedParenthesis(true)
       endLv.pop
+      flushPairedParenthesis(true)
     }
   }
 
@@ -54,7 +54,7 @@ class GoldenCalculator {
    * Update counter of number if needed, this should
    * be called anytime we key in an operator
    */
-  def checkAndEndSomeNumber = {
+  def checkAndEndNumber = {
     if (wasNumIn) {
       postfix.push(numEndSignal)
       numCnt += 1
@@ -114,15 +114,15 @@ class GoldenCalculator {
     val c = enc(i)
     c match {
       case '(' => {
-        checkAndEndSomeNumber
+        checkAndEndNumber
         startLevelPair(withLevelMark = false)
       }
       case '*' => {
-        checkAndEndSomeNumber
+        checkAndEndNumber
         pushOperator(c)
       }
       case '+' | '-' => {
-        checkAndEndSomeNumber
+        checkAndEndNumber
 
         /**
          * If opCnt > operands at some moment after
@@ -145,12 +145,12 @@ class GoldenCalculator {
         }
       }
       case ')' => {
-        checkAndEndSomeNumber
+        checkAndEndNumber
         flushPairedParenthesis(false)
         checkAndEndLevelPair
       }
       case '=' => {
-        checkAndEndSomeNumber
+        checkAndEndNumber
         while (!symStack.isEmpty) {
           postfix.push(symStack.pop)
         }
