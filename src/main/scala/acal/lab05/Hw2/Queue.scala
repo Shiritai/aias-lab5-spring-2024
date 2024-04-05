@@ -42,9 +42,7 @@ class Queue(width: Int, depth: Int)
     }.elsewhen(io.pop && (front < rear)) {
       front := front + 1.U
     }
-    when(rear > front + 1.U && io.pop) {
-      out := mem(front + 1.U)
-    }.elsewhen(rear > front) {
+    when(rear > front) {
       out := mem(front)
     }.elsewhen(rear === front && io.push) {
       out := io.dataIn
