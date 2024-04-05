@@ -7,9 +7,13 @@ trait SingleSideListIO extends Bundle {
   def push:    Bool
   def pop:     Bool
   def en:      Bool
+  def clear:   Bool
   def dataIn:  UInt
   def size:    UInt
   def dataOut: UInt
+  // for direct memory access
+  def subscriptIdx:     UInt
+  def subscriptDataOut: UInt
 }
 
 trait SingleSideList {
