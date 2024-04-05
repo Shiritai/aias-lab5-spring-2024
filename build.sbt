@@ -48,6 +48,9 @@ libraryDependencies += "edu.berkeley.cs" %% "chisel3" % "3.4.4"
 
 libraryDependencies += "edu.berkeley.cs" %% "chisel-iotesters" % "1.5.4"
 
+libraryDependencies +=
+    "org.scalatest" %% "scalatest" % "3.2.11" % Test
+
 // scalacOptions ++= scalacOptionsVersion(scalaVersion.value)
 
 scalacOptions ++= Seq(

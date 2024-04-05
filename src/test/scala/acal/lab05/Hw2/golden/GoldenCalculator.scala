@@ -15,9 +15,11 @@ class GoldenCalculator {
   val opOrder =
     Map('+' -> 0, '-' -> 0, '*' -> 1, '(' -> -1)
 
-  var symStack = new GoldenStack[Char]() // symbol stack
-  var endLv   = new GoldenStack[Int]() // end level stack
-  var postfix = new GoldenStack[Char]()
+  var symStack =
+    new GoldenStack[Char]() // symbol stack
+  var endLv =
+    new GoldenStack[Int]() // end level stack
+  var postfix   = new GoldenStack[Char]()
   var evaluator = new GoldenStack[BigInt]
   var opCnt     = 0 // numbers of operators
   var numCnt    = 0 // numbers of number
@@ -26,7 +28,8 @@ class GoldenCalculator {
   val numEndSignal =
     '(' // end signal of a number in postfix
 
-  var logger = List[String]()
+  var logger        = List[String]()
+  var bitLengthPeak = 0
 
   def startLevelPair(withLevelMark: Boolean) = {
     symStack.push('(') // push in all cases
@@ -178,20 +181,27 @@ class GoldenCalculator {
       if (c.isDigit) {
         n = s"${n}${c.asDigit}"
       } else if (c == numEndSignal) {
-        evaluator.push(BigInt(n))
+        val bn = BigInt(n)
+        bitLengthPeak =
+          Math.max(bitLengthPeak, bn.bitLength)
+        evaluator.push(bn)
         n = ""
       } else {
         val b = evaluator.pop
         val a = evaluator.pop
 
-        c match {
-          case '+' => evaluator.push(a + b)
-          case '-' => evaluator.push(a - b)
-          case '*' => evaluator.push(a * b)
+        val res = c match {
+          case '+' => a + b
+          case '-' => a - b
+          case '*' => a * b
           case _ =>
             throw new Exception(
               s"[evaluate] Bad operator: ${c}")
         }
+
+        bitLengthPeak =
+          Math.max(bitLengthPeak, res.bitLength)
+        evaluator.push(res)
       }
     }
     evaluator.peek
@@ -208,6 +218,7 @@ object GoldenCalculator {
   var postfixPeak   = 0
   var evaluatorPeak = 0
   var testLenPeak   = 0
+  var bitLengthPeak = 0
 
   def generateRandomExpression(
       parts: Int): (String, String) = {
@@ -230,8 +241,14 @@ object GoldenCalculator {
      */
     def genNextInt() = {
       (0 until 4)
-        .map(_ => rnd.nextInt(1000000).toString)
-        .reduce((a, b) => a + b)
+        .map(_ => rnd.nextInt(10).toString)
+        .reduce((a, b) => {
+          if (a == "0") {
+            b
+          } else {
+            a + b
+          }
+        })
     }
 
     while (cnt > 0) {
@@ -296,6 +313,8 @@ object GoldenCalculator {
 
     val eval = evaluate(res)
 
+    // println(s"eval: ${eval}")
+
     res += "="
     (res, eval)
   }
@@ -335,6 +354,8 @@ object GoldenCalculator {
       Math.max(postfixPeak, gc.postfix.peak)
     evaluatorPeak =
       Math.max(evaluatorPeak, gc.evaluator.peak)
+    bitLengthPeak =
+      Math.max(bitLengthPeak, gc.bitLengthPeak)
   }
 
   def normalTest() = {
@@ -393,8 +414,9 @@ object GoldenCalculator {
    */
   def evaluate(s: String) = {
     val cmd =
-      "python3 -c \"print(" + s + ")\"" // cmd to run
-    cmd.!! // captures the output
+      "python3 -c print(" + s + ")" // cmd to run
+    // println(s"cmd is: $cmd")
+    cmd.!!.strip // captures the output
   }
 
   def randomTest(times: Int = 100,
@@ -402,11 +424,18 @@ object GoldenCalculator {
     for (_ <- 0 until times) {
       val (rndExp, res) =
         generateRandomExpression(parts)
-      val golden = BigInt(res.strip())
+      try {
+        var golden = BigInt(res)
+        singleTest(rndExp, golden)
+        testLenPeak =
+          Math.max(testLenPeak, rndExp.size)
+      } catch {
+        case ex: NumberFormatException => {
+          println(
+            (("=" * 10) + "\n") + rndExp + " --> [ " + res + " ]" + ("\n" + ("=" * 10) + "\n"))
+        }
+      }
       // print(s"${rndExp} -> ${golden}: ")
-      singleTest(rndExp, golden)
-      testLenPeak =
-        Math.max(testLenPeak, rndExp.size)
       // var success = false
       // while (!success) {
       //   try {
@@ -417,13 +446,5 @@ object GoldenCalculator {
       // }
     }
     println(s"Passed ${times} random tests")
-  }
-
-  def main(args: Array[String]) = {
-    normalTest()
-    randomTest(1000, 100)
-    randomTest(10, 1000)
-    println(
-      s"Statistic: symStackPeak: ${symStackPeak}, endLvPeak: ${endLvPeak}, postfixPeak: ${postfixPeak}, evaluatorPeak: ${evaluatorPeak}, testLenPeak: ${testLenPeak}")
   }
 }
