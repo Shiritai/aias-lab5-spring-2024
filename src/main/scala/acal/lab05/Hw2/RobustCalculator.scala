@@ -175,8 +175,8 @@ class RobustCalculator(maxEleWidth:      Int = 128,
     Enum(6)
 
   // In evaluate state
-  val sEvIdle :: sEvFetchB :: sEvFetchA :: sEvAdd :: sEvSub :: sEvMul :: Nil =
-    Enum(6)
+  val sEvIdle :: sEvFetchB :: sEvFetchA :: sEvCal :: Nil =
+    Enum(4)
   val sEv = RegInit(sEvIdle)
 
   val inst = RegInit(doHalt)
@@ -234,13 +234,13 @@ class RobustCalculator(maxEleWidth:      Int = 128,
       }
     }
     is(sInput) {
-      queuePush   := true.B
-      queueDataIn := io.keyIn
-
       /**
        * In input state, all the works are required
        * to be finished in SINGLE CLOCK CYCLE
        */
+      queuePush   := true.B
+      queueDataIn := io.keyIn
+
       when(io.keyIn === eq) {
         // "=" is pressed
         state := sParse
@@ -594,35 +594,19 @@ class RobustCalculator(maxEleWidth:      Int = 128,
         is(sEvFetchA) {
           bigNumA      := evaluatorDataOut
           evaluatorPop := true.B
+          sEv := sEvCal
+        }
+        is(sEvCal) {
+          evaluatorPush   := true.B
+          bigNum          := 0.U
+          bigNumA         := 0.U
+          postfixIter     := postfixIter + 1.U
+          sEv             := sEvIdle
           switch(postfixSubscriptDataOut) {
-            is(add) { sEv := sEvAdd }
-            is(sub) { sEv := sEvSub }
-            is(mul) { sEv := sEvMul }
+            is(add) { evaluatorDataIn := bigNumA + bigNum }
+            is(sub) { evaluatorDataIn := bigNumA - bigNum }
+            is(mul) { evaluatorDataIn := bigNumA * bigNum }
           }
-        }
-        is(sEvAdd) {
-          evaluatorPush   := true.B
-          evaluatorDataIn := bigNumA + bigNum
-          bigNum          := 0.U
-          bigNumA         := 0.U
-          postfixIter     := postfixIter + 1.U
-          sEv             := sEvIdle
-        }
-        is(sEvSub) {
-          evaluatorPush   := true.B
-          evaluatorDataIn := bigNumA - bigNum
-          bigNum          := 0.U
-          bigNumA         := 0.U
-          postfixIter     := postfixIter + 1.U
-          sEv             := sEvIdle
-        }
-        is(sEvMul) {
-          evaluatorPush   := true.B
-          evaluatorDataIn := bigNumA * bigNum
-          bigNum          := 0.U
-          bigNumA         := 0.U
-          postfixIter     := postfixIter + 1.U
-          sEv             := sEvIdle
         }
       }
     }
