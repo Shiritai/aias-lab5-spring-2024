@@ -6,12 +6,13 @@ import chisel3.iotesters.{Driver, PeekPokeTester}
 import scala.util.Random
 import acal.lab05.Hw2.golden._
 
-class SingleSideListTest[T <: Module with SingleSideList](
-    st:    T,
-    gst:   GoldenSingleIoList[Int],
+class SingleSideListTest[
+    T <: Module with SingleSideList](
+    ssl:   T,
+    gSsl:  GoldenSingleIoList[Int],
     width: Int,
     depth: Int)
-    extends PeekPokeTester(st) {
+    extends PeekPokeTester(ssl) {
   var genRnd = new Random()
   val opKind = 4
   val push :: peek :: pop :: idle :: Nil =
@@ -22,30 +23,30 @@ class SingleSideListTest[T <: Module with SingleSideList](
 
     op match {
       case `push` => { // push
-        if (gst.size < depth) {
+        if (gSsl.size < depth) {
           val n = genRnd.nextInt(1 << width)
-          gst.push(n)
-          poke(st.io.en,     true)
-          poke(st.io.push,     true)
-          poke(st.io.pop,     false)
-          poke(st.io.dataIn,     n)
+          gSsl.push(n)
+          poke(ssl.io.en,      true)
+          poke(ssl.io.push,      true)
+          poke(ssl.io.pop,      false)
+          poke(ssl.io.dataIn,      n)
         }
       }
       case `peek` => { // peek
-        poke(st.io.en, true)
-        poke(st.io.push, false)
-        poke(st.io.pop, false)
+        poke(ssl.io.en, true)
+        poke(ssl.io.push, false)
+        poke(ssl.io.pop, false)
       }
       case `pop` => { // pop
-        if (!gst.isEmpty) {
-          gst.pop
-          poke(st.io.en, true)
-          poke(st.io.push, false)
-          poke(st.io.pop, true)
+        if (!gSsl.isEmpty) {
+          gSsl.pop
+          poke(ssl.io.en, true)
+          poke(ssl.io.push, false)
+          poke(ssl.io.pop, true)
         }
       }
       case idle => {
-        poke(st.io.en, false)
+        poke(ssl.io.en, false)
       }
     }
 
@@ -53,15 +54,15 @@ class SingleSideListTest[T <: Module with SingleSideList](
 
     if (op == peek) {
       expect(
-        st.io.size,
-        gst.size,
-        s"Golden size: ${gst.size} != signal size: ${st.io.size}")
+        ssl.io.size,
+        gSsl.size,
+        s"Golden size: ${gSsl.size} != signal size: ${ssl.io.size}")
 
-      if (!gst.isEmpty) {
+      if (!gSsl.isEmpty) {
         expect(
-          st.io.dataOut,
-          gst.peek,
-          s"Golden top: ${gst.peek} != signal top: ${st.io.dataOut}")
+          ssl.io.dataOut,
+          gSsl.peek,
+          s"Golden top: ${gSsl.peek} != signal top: ${ssl.io.dataOut}")
       }
     }
   }
@@ -71,23 +72,23 @@ object SingleSideListTest extends App {
   val width = 4
   val depth = 1000
 
-  Driver.execute(
-    args,
-    () => new Stack(width, depth)) { st: Stack =>
-    new SingleSideListTest[Stack](
-      st,
-      new GoldenStack[Int](),
-      width,
-      depth)
+  Driver.execute(args,
+                 () => new Stack(width, depth)) {
+    ssl: Stack =>
+      new SingleSideListTest[Stack](
+        ssl,
+        new GoldenStack[Int](),
+        width,
+        depth)
   }
 
-  Driver.execute(
-    args,
-    () => new Queue(width, depth)) { q: Queue =>
-    new SingleSideListTest[Queue](
-      q,
-      new GoldenQueue[Int](),
-      width,
-      depth)
+  Driver.execute(args,
+                 () => new Queue(width, depth)) {
+    ssl: Queue =>
+      new SingleSideListTest[Queue](
+        ssl,
+        new GoldenQueue[Int](),
+        width,
+        depth)
   }
 }
