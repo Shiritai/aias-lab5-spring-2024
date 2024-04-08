@@ -132,7 +132,7 @@ class RobustCalculatorTest(dut: RobustCalculator)
 
       expect(
         resToCmp == outToCmp,
-        s"Question ${(index + 1).toString}: ${input} has...\nModule result: ${resToCmp}\nGolden: ${outToCmp}, resIsNeg: ${resIsNeg}, goldenIsNeg: ${outputIsNeg}, res len: ${res.bitLength}, golden len: ${output.bitLength}"
+        s"Question ${(index + 1).toString}: ${input} has...\nModule result: ${resToCmp}\nGolden: ${outToCmp}\nresIsNeg: ${resIsNeg}\ngoldenIsNeg: ${outputIsNeg}\nres len: ${res.bitLength}\ngolden len: ${output.bitLength}"
       )
 
       step(1)
@@ -149,7 +149,6 @@ class RobustCalculatorTest(dut: RobustCalculator)
 
   println("Running random tests...")
   randTests.zipWithIndex.foreach(singleTest)
-
 }
 
 object RobustCalculatorTest extends App {
