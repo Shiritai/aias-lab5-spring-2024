@@ -2,7 +2,7 @@ package acal.lab05.Hw2.golden
 
 class GoldenStack[T] extends GoldenSingleIoList[T] {
   var stack = List[T]()
-  var peak  = 0
+  var peak  = 0 // for statistic monitoring
 
   /**
    * Push an element at the front

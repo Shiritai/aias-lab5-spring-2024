@@ -7,21 +7,21 @@ import scala.language.postfixOps
 class GoldenCalculatorTest extends AnyFunSuite {
 
   test("Normal test") {
-    GoldenCalculator.normalTest()
+    GoldenCalculatorTester.normalTest()
   }
 
   test(
     "Random test (short expression, big number)") {
-    GoldenCalculator.randomTest(10, 1000)
+    GoldenCalculatorTester.randomTest(10, 1000)
   }
 
   test(
     "Random test (long expression, small number)") {
-    GoldenCalculator.randomTest(1000, 100)
+    GoldenCalculatorTester.randomTest(1000, 100)
   }
 
   test("Statistic") {
     println(
-      s"Statistic: symStackPeak: ${GoldenCalculator.symStackPeak}, endLvPeak: ${GoldenCalculator.endLvPeak}, postfixPeak: ${GoldenCalculator.postfixPeak}, evaluatorPeak: ${GoldenCalculator.evaluatorPeak}, testLenPeak: ${GoldenCalculator.testLenPeak}, bitLengthPeak: ${GoldenCalculator.bitLengthPeak}")
+      s"Statistic: symStackPeak: ${GoldenCalculatorTester.symStackPeak}, endLvPeak: ${GoldenCalculatorTester.endLvPeak}, postfixPeak: ${GoldenCalculatorTester.postfixPeak}, evaluatorPeak: ${GoldenCalculatorTester.evaluatorPeak}, testLenPeak: ${GoldenCalculatorTester.testLenPeak}, bitLengthPeak: ${GoldenCalculatorTester.bitLengthPeak}")
   }
 }

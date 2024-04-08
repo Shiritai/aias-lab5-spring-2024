@@ -4,19 +4,19 @@
 
 ```mermaid
 graph LR
-    doHalt[["doHalt"]] --> doCheckAndEndNum --> doCheckAndEndLevelPair <--> doFlushPairedParenthesisT <--> doPopAndPushT
-
-    doCheckAndEndLevelPair --> doStartLevelPair --> doHalt
-    doCheckAndEndLevelPair --> doCheckAndEndLevelPair
+    doHalt[["doHalt"]] --> doStartLevelPair --> doHalt
 ```
 
 ## State diagram of `*`
 
 ```mermaid
 graph LR
-    doHalt[["doHalt"]] --> doCheckAndEndNum --> doCheckAndEndLevelPair <--> doFlushPairedParenthesisT <--> doPopAndPushT
+    doHalt[["doHalt"]] --> doCheckAndEndNum --> doCheckAndEndLevelPair --> doFlushPairedParenthesisT --> doPopAndPushT
+    doFlushPairedParenthesisT --> doCheckAndEndLevelPair
+    doPopAndPushT --> doFlushPairedParenthesisT
 
-    doCheckAndEndLevelPair --> doPushOperator <--> doPopAndPushPrior
+    doCheckAndEndLevelPair --> doPushOperator --> doPopAndPushPrior
+    doPopAndPushPrior --> doPushOperator
     doPushOperator --> doHalt
     doCheckAndEndLevelPair --> doCheckAndEndLevelPair
 ```
@@ -52,9 +52,12 @@ graph LR
 
 ```mermaid
 graph LR
-    doHalt[["doHalt"]] --> doCheckAndEndNum --> doCheckAndEndLevelPair <--> doFlushPairedParenthesisT <--> doPopAndPushT
+    doHalt[["doHalt"]] --> doCheckAndEndNum --> doCheckAndEndLevelPair --> doFlushPairedParenthesisT --> doPopAndPushT
 
-    doCheckAndEndLevelPair <--> doPopAndPush
+    doFlushPairedParenthesisT --> doCheckAndEndLevelPair
+    doPopAndPushT --> doFlushPairedParenthesisT
+    doCheckAndEndLevelPair --> doPopAndPush
+    doPopAndPush --> doCheckAndEndLevelPair
 
     doCheckAndEndLevelPair --> doHalt
 
@@ -65,5 +68,5 @@ graph LR
 
 ```mermaid
 graph LR
-    doHalt[["doHalt"]] <--> doPush
+    doHalt[["doHalt"]] --> doPush --> doHalt
 ```

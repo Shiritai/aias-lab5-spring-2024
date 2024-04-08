@@ -1,7 +1,7 @@
 package acal.lab05.Hw2
 
 import chisel3.iotesters.{Driver, PeekPokeTester}
-import acal.lab05.Hw2.golden.GoldenCalculator
+import acal.lab05.Hw2.golden.GoldenCalculatorTester
 
 class RobustCalculatorTest(dut: RobustCalculator)
     extends PeekPokeTester(dut) {
@@ -143,7 +143,7 @@ class RobustCalculatorTest(dut: RobustCalculator)
 
   val randTests = (0 until 1000).map(_ => {
     val (rndExp, res) =
-      GoldenCalculator.generateRandomExpression(30)
+      GoldenCalculatorTester.generateRandomExpression(30)
     (rndExp, BigInt(res))
   })
 
