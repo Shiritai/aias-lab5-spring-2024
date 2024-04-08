@@ -143,7 +143,7 @@ class RobustCalculatorTest(dut: RobustCalculator)
 
   val randTests = (0 until 1000).map(_ => {
     val (rndExp, res) =
-      GoldenCalculatorTester.generateRandomExpression(30)
+      GoldenCalculatorTester.generateRandomExpression(40)
     (rndExp, BigInt(res))
   })
 
