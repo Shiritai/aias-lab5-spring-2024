@@ -31,7 +31,7 @@ class PRNG(seed: Int) extends Module {
 
   val _isOutOfRange = Wire(Vec(digitCnt, Bool()))
   for (i <- 0 until digitCnt) {
-    _isOutOfRange(i) := nxtRgVec(i)(digitWidth - 1)
+    _isOutOfRange(i) := nxtRgVec(i) > 9.U
   }
 
   val _hasReputation = nxtRgVec
