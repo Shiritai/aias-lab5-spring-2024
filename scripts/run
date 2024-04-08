@@ -95,6 +95,26 @@ run_tests() {
     fi
 }
 
+run_golden_tests() {
+    test_name=$project_prefix.$1
+    # Use ls to fetch all files in such testing directory
+    # Hidding error when given name is a file or DNE
+    # Wrap with realpath to strip relative path
+    test_path=$(realpath "$test_path""$(replace_all "$test_name" . /)")
+    tests=$(ls "$test_path" 2>/dev/null)
+    # run all tests in such directory
+    if [ "$tests" ]; then
+        for t in $tests; do
+            real_t=$(replace_all "$test_name"."$t" .scala)
+            sbt "testOnly $real_t"
+        done
+    elif [ -f "$test_path".scala ]; then
+        sbt "testOnly $test_name"
+    else
+        print_error "Path of testbench(s) $test_path DNE"
+    fi
+}
+
 test_option="-td ./generated"
 test_with_vcd_option="$test_option -tbn verilator"
 
@@ -104,6 +124,9 @@ check)
     ;;
 test)
     run_tests "$2" "$test_with_vcd_option"
+    ;;
+test_golden)
+    run_golden_tests "$2"
     ;;
 clean)
     case $2 in
