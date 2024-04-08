@@ -18,29 +18,29 @@ class PRNG(seed: Int) extends Module {
   val rgs = RegInit(
     VecInit(Seq(0x5, 0x3, 0x7, 0x8).map(n =>
       n.U(digitWidth.W))))
+
   io.puzzle := rgs
 
   val nxtRgs = (rgs.asUInt() << 1 | (rgs(2)(
     2) ^ rgs(3)(0) ^ rgs(3)(1) ^ rgs(3)(3)))(
     digitWidth * digitCnt - 1,
     0)
-  val nxtRgVec = UInt2Vec(digitCnt, digitWidth)(nxtRgs)
+  val nxtRgVec =
+    UInt2Vec(digitCnt, digitWidth)(nxtRgs)
+
+  val isInRange = nxtRgVec
+    .map { case n => n <= 9.U }
+    .reduce((a, b) => a & b)
+
+  val noReputation = nxtRgVec
+    .combinations(2)
+    .map(e => e(0) =/= e(1))
+    .reduce((a, b) => a & b)
+
+  val isValid = isInRange && noReputation
 
   val sIdle :: sGen :: Nil = Enum(2)
   val state                = RegInit(sIdle)
-
-  val _isOutOfRange = Wire(Vec(digitCnt, Bool()))
-  for (i <- 0 until digitCnt) {
-    _isOutOfRange(i) := nxtRgVec(i) > 9.U
-  }
-
-  val _hasReputation = nxtRgVec
-    .combinations(2)
-    .map(e => e(0) === e(1))
-    .reduce((a, b) => a | b)
-
-  val isValid = _isOutOfRange
-    .asUInt() === 0.U && !_hasReputation
 
   io.ready  := true.B
   io.puzzle := rgs
@@ -63,12 +63,14 @@ class PRNG(seed: Int) extends Module {
 }
 
 object PRNG {
-  def apply(seed: Int)(gen: Bool, ready: Bool, puzzle: Vec[UInt]) = {
+  def apply(seed: Int)(gen: Bool,
+                       ready:  Bool,
+                       puzzle: Vec[UInt]) = {
     val p = Module(new PRNG(seed))
 
     p.io.gen := gen
-    ready := p.io.ready
-    puzzle := p.io.puzzle
+    ready    := p.io.ready
+    puzzle   := p.io.puzzle
 
     p
   }
