@@ -3,7 +3,7 @@ package acal.lab05.Hw2
 import chisel3.iotesters.{Driver, PeekPokeTester}
 import scala.language.implicitConversions
 
-class NegIntGenTest(dut: NegIntGen)
+class NegIntGenTest(dut: RobustCalculator)
     extends PeekPokeTester(dut) {
   implicit def bigint2boolean(b: BigInt): Boolean =
     if (b > 0) true else false
@@ -76,7 +76,7 @@ class NegIntGenTest(dut: NegIntGen)
 }
 
 object NegIntGenTest extends App {
-  Driver.execute(args, () => new NegIntGen) {
-    c: NegIntGen => new NegIntGenTest(c)
+  Driver.execute(args, () => new RobustCalculator) {
+    c: RobustCalculator => new NegIntGenTest(c)
   }
 }

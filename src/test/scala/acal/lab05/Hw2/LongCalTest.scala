@@ -3,7 +3,7 @@ package acal.lab05.Hw2
 import chisel3.iotesters.{Driver, PeekPokeTester}
 import scala.language.implicitConversions
 
-class LongCalTest(dut: LongCal)
+class LongCalTest(dut: RobustCalculator)
     extends PeekPokeTester(dut) {
 
   implicit def bigint2boolean(b: BigInt): Boolean =
@@ -98,7 +98,7 @@ class LongCalTest(dut: LongCal)
 }
 
 object LongCalTest extends App {
-  Driver.execute(args, () => new LongCal) {
-    c: LongCal => new LongCalTest(c)
+  Driver.execute(args, () => new RobustCalculator) {
+    c: RobustCalculator => new LongCalTest(c)
   }
 }

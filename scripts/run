@@ -85,8 +85,10 @@ run_tests() {
     # run all tests in such directory
     if [ "$tests" ]; then
         for t in $tests; do
-            real_t=$(replace_all "$test_name"."$t" .scala)
-            sbt "Test/runMain $real_t $2"
+            if [ -f "$test_path/$t" ]; then
+                real_t=$(replace_all "$test_name"."$t" .scala)
+                sbt "Test/runMain $real_t $2"
+            fi
         done
     elif [ -f "$test_path".scala ]; then
         sbt "Test/runMain $test_name $2"
@@ -105,8 +107,10 @@ run_golden_tests() {
     # run all tests in such directory
     if [ "$tests" ]; then
         for t in $tests; do
-            real_t=$(replace_all "$test_name"."$t" .scala)
-            sbt "testOnly $real_t"
+            if [ -f "$test_path/$t" ]; then
+                real_t=$(replace_all "$test_name"."$t" .scala)
+                sbt "testOnly $real_t"
+            fi
         done
     elif [ -f "$test_path".scala ]; then
         sbt "testOnly $test_name"

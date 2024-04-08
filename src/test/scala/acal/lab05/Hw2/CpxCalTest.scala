@@ -3,7 +3,7 @@ package acal.lab05.Hw2
 import chisel3.iotesters.{Driver, PeekPokeTester}
 import scala.language.implicitConversions
 
-class CpxCalTest(dut: CpxCal)
+class CpxCalTest(dut: RobustCalculator)
     extends PeekPokeTester(dut) {
 
   val dict = Map(
@@ -62,7 +62,7 @@ class CpxCalTest(dut: CpxCal)
 }
 
 object CpxCalTest extends App {
-  Driver.execute(args, () => new CpxCal) {
-    c: CpxCal => new CpxCalTest(c)
+  Driver.execute(args, () => new RobustCalculator) {
+    c: RobustCalculator => new CpxCalTest(c)
   }
 }
