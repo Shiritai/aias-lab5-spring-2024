@@ -7,13 +7,13 @@ NTHU_109062274_楊子慶  ACAL 2024 Spring Lab 5 HW Submission
 
 Travelers always do their best before the departure of their adventures, so as what programmers favor before designing and implementing programs. When we see the program template isn’t well-prepared, we may do something like the first git commit of mine:
 
-:::info
+```txt
 Re-initialize the whole project
 
 * Rename all the project/files/modules/variables to follow the style that recommended by Chisel
 * Format all the source codes by applying style that configured in .scalafmt.conf
 * Update run script introduced and implemented in lab04 with more flexibility and functions
-:::
+```
 
 Nice, let's start our journey ;)
 
@@ -52,7 +52,7 @@ and produce value with <font color=orange>**width auto-detected**</font>.
 
 One can design the IO interface as:
 
-```scala=
+```scala
 /**
  * `revert` (bool): `0` mean up-count and `1` means
  * count according to down-count
@@ -88,7 +88,7 @@ With such a counter, we're well-prepared to design the structure of `TrafficLogh
 
 We can take the advantage of MUXs to select correct signal
 
-```scala=
+```scala
 class AdvanceCounter(from: Int = 0, to: Int = 9)
     extends Module {
   ...
@@ -127,7 +127,7 @@ Same as what we've done in lab4, pursuing  for simpler user experience, we creat
 
 > Well, although the user is... me ;)
 
-```scala=
+```scala
 object AdvanceCounter {
   def apply(from: Int = 0, to: Int = 9)(
       value:    UInt,
@@ -153,12 +153,11 @@ object AdvanceCounter {
 
 Such a implementation enables us to have downward compatibility to a normal `Counter`, elegant!
 
-:::success
 Note that user doesn't need to assign all the input wires if one assigns them with <font color=red>named argument</font>, powered by `Scala` language.
 
 As the designer as well as the user, I used it in `TrafficLightPed` as:
 
-```scala=
+```scala
 AdvanceCounter(0, timeRange)(
   value    = io.timer,
   revert   = true.B, // always down count
@@ -168,13 +167,12 @@ AdvanceCounter(0, timeRange)(
 ```
 
 Elegant!
-:::
 
 #### Testbench
 
 To test a module too complicated to generate all possible normal and edge cases, one can utilize random test by implementing the exactly same functionality in software manners and compare the result:
 
-```scala=
+```scala
 class AdvanceCounterTest(counter: AdvanceCounter,
                          from: Int,
                          to: Int)
@@ -286,7 +284,7 @@ With `AdvanceCounter`, we can:
     * Pedestrian button is pressed
 * Wire output value to `io.timer`
 
-```scala=
+```scala
 // in class TrafficLightPed
 val io = IO(new Bundle {
   val pButton  = Input(Bool())
@@ -324,15 +322,13 @@ AdvanceCounter(0, timeRange)(
 )
 ```
 
-:::info
 Note that I calculate the range of timer `timeRange` in functional programming paradigm style, making the code to be understood easily.
 
 The `timeRange` is passed to `AdvanceCounter` to generate customized module.
-:::
 
 Then, determine sequential logic of next state:
 
-```scala=
+```scala
 // State register
 val state = RegInit(sIdle)
 
@@ -403,7 +399,7 @@ switch(state) {
 
 When pedestrian button is pressed, we should store current state and inject timer value of pedestrian traffic light.
 
-```scala=
+```scala
 when(io.pButton) {
   /**
    * Cache last state and update it if needed.
@@ -425,7 +421,7 @@ when(io.pButton) {
 
 Then, after we're in `sPg` state and count to the end, we should do context switch: restore the old state and inject correct value.
 
-```scala=
+```scala
 switch(state) {
   ...
   is(sPg) {
@@ -459,9 +455,7 @@ In the second snapshot, we can see that when `pButton` is triggered at about 90 
 
 ### Introduction
 
-:::success
 In Hw5-2, I only design and implement one hardware calculator: `RobustCalculator`, that can handle all the legal expressions.
-:::
 
 Before I introduce the implementation method, we should first discuss the algorithm and methodology of hardware designation.
 
@@ -581,15 +575,13 @@ But before we introduce the implementation of `GoldenCalculator`, we shall first
 
 #### `GoldenSingleSideList`
 
-:::success
 Objects prefixed with `Golden` are the software implementation of that doesn't prefixed with `Golden`.
-:::
 
 As its name indicates, this is the [ADT](https://en.wikipedia.org/wiki/Abstract_data_type) of lists with single side as input and single side as output. Appearently, stack (`GoldenStack`) and queue (`GoldenQueue`) are two instances of `GoldenSingleSideList`.
 
 A `GoldenSingleSideList` interface should implements methods listed below:
 
-```scala=
+```scala
 /**
  * A list-structured data structure having single
  * side as input and single side as output.
@@ -623,13 +615,11 @@ trait GoldenSingleIoList[T] {
 }
 ```
 
-:::info
 Acutally, for the hardware implementation, we add one method: `subscription` that can help us travers all the elements in a `SingleSideList`, which is not shown in `GoldenSingleSideList`
-:::
 
 For the implementation of `GoldenQueue` and `GoldenStack`, there is nothing but using the DS in scala standard library, like:
 
-```scala=
+```scala
 class GoldenQueue[T] extends GoldenSingleIoList[T] {
   var queue = new Queue[T]()
   def push(e: T) = { queue.enqueue(e) }
@@ -640,7 +630,7 @@ class GoldenQueue[T] extends GoldenSingleIoList[T] {
 }
 ```
 
-```scala=
+```scala
 class GoldenStack[T] extends GoldenSingleIoList[T] {
   var stack = List[T]()
   var peak  = 0
@@ -686,7 +676,7 @@ To implement a calculator with readibility, elegancy and less redundancy, we com
 
 With them, we can implement `keyIn`, a.k.a. convert infix to postfix
 
-```scala=
+```scala
 def keyIn(i: Int) = {
     val c = enc(i)
     c match { ... }
@@ -696,16 +686,16 @@ def keyIn(i: Int) = {
 with pattern matching:
 
 * case `(`
-    ```scala=
+    ```scala
     startLevelPair(withLevelMark = false)
     ```
 * case `*`
-    ```scala=
+    ```scala
     checkAndEndNumber
     pushOperator(c)
     ```
 * case `+-`
-    ```scala=
+    ```scala
     checkAndEndNumber
 
     /**
@@ -728,13 +718,13 @@ with pattern matching:
     }
     ```
 * case `)`
-    ```scala=
+    ```scala
     checkAndEndNumber
     flushPairedParenthesis(false)
     checkAndEndLevelPair
     ```
 * case `=`
-    ```scala=
+    ```scala
     checkAndEndNumber
     while (!symStack.isEmpty) {
         postfix.push(symStack.pop)
@@ -742,12 +732,11 @@ with pattern matching:
     opCnt += 1
     ```
 * One of `0123456789`
-    ```scala=
+    ```scala
     postfix.push(c)
     wasNumIn = true
     ```
 
-:::info
 Note: To mark some arbitrary number in 4-bits size container `postfix` stack, we use `numEndSignal` $\equiv$ 13 $\equiv$ `(` as the end mark of a complete number.
 
 For example, `12+345=` after converting to "`postfix`" will be:
@@ -757,7 +746,6 @@ For example, `12+345=` after converting to "`postfix`" will be:
 |`raw`|`1`|`2`|`13`|`3`|`4`|`5`|`13`|`10`|`15`|
 
 This storing method can <font color=green>**reduce internal fragmentation**</font> for storing both numbers and operators at the same container, with cost of 4-bits per number. Meanwhile, we don't need to store operators with weird encoding to avoid confliction with normal number.
-:::
 
 The code has no redundancy and reputation, right?
 
@@ -765,7 +753,7 @@ The code has no redundancy and reputation, right?
 
 The evalutation part is kind of easy, just like the original algorithm, with additional logic of handing `numEndSignal`.
 
-```scala=
+```scala
 def evaluate = {
   var n = ""
 
@@ -810,7 +798,7 @@ Take the advantage of Scala Test, Python and random number generation, one can v
 
 To test `GoldenCalculator` once, we can use `GoldenCalculatorTester::singleTest` method:
 
-```scala=
+```scala
 // in object GoldenCalculatorTester
 def singleTest(test: (String, BigInt)) = {
   val gc  = new GoldenCalculator
@@ -852,9 +840,7 @@ def singleTest(test: (String, BigInt)) = {
 }
 ```
 
-:::info
 Note: for each `singleTest`, we collect statistic data from each instance of `GoldenCalculator`s
-:::
 
 Based on it, we have two kinds of tests: `normalTest` and `randomTest`. The former method includes normal, edge and difficult cases, the latter method can use argument to adjust what kind of test case should be generated, and based on the requirement, it can generate test cases by `generateRandomExpression` using an intuitive algorithm.
 
@@ -866,7 +852,7 @@ We write an example test using Scala test: `GoldenCalculatorTest`. To invoke it,
 
 which `GoldenCalculatorTest` looks like:
 
-```scala=
+```scala
 package acal.lab05.Hw2.golden
 
 import org.scalatest.funsuite.AnyFunSuite
@@ -929,7 +915,7 @@ Just like the preparation of implementing `GoldenCalculator`, we first implement
 
 This is the interface of list that has one side for input and one for output. Also, it's subscriptable.
 
-```scala=
+```scala
 trait SingleSideListIO extends Bundle {
   def push:    Bool
   def pop:     Bool
@@ -954,7 +940,7 @@ trait SingleSideList {
 
 This is the modified version from [offical version](https://github.com/ucb-bar/chisel-tutorial/blob/release/src/main/scala/examples/Stack.scala), adding the logic of <font color=orange>**peeking the newest element after each `push` and `pop` operation**</font> and element subscription for iterating it.
 
-```scala=
+```scala
 class Stack(width: Int, depth: Int)
     extends Module
     with SingleSideList {
@@ -1019,7 +1005,7 @@ class Stack(width: Int, depth: Int)
 
 This is implemented with the same patterns compare to `Stack`.
 
-```scala=
+```scala
 class Queue(width: Int, depth: Int)
     extends Module
     with SingleSideList {
@@ -1081,7 +1067,7 @@ class Queue(width: Int, depth: Int)
 
 Undoubtedly, we implement the singleton `Stack` to use it conveniently, so as the `Queue`. Below shows the example of `Stack` singleton.
 
-```scala=
+```scala
 object Stack {
   def apply(width: Int, depth: Int)() = {
     Module(new Stack(width = width, depth = depth))
@@ -1143,7 +1129,7 @@ Exit Code: 0
 
 The testbench take the advantage of `SingleSideList` interface so that even if we have only one testing method `SingleSideListTest`, we can reuse it without any redundancy!
 
-```scala=
+```scala
 // in SingleSideTest.scala
 object SingleSideListTest extends App {
   val width = 4
@@ -1179,7 +1165,7 @@ Ok, we're well prepared to implement `RobustCalculator`.
 
 Read the documentation of `RobustCalculator` we provided is the best way to understand it.
 
-```scala=
+```scala
 /**
  * A calculator robust enough to handle `+` `-` `*`
  * `(` `)` and unary version of `+` `-`, fully
@@ -1226,7 +1212,7 @@ graph LR
 
 For `sIdle` state, we detect `io.keyIn` until the input is not `0`, handling the edge case of single `=` input. If non-zero input detected, we switch to `sInput` mode:
 
-```scala=
+```scala
 is(sIdle) {
   when(io.keyIn =/= zero) {
     when(io.keyIn === eq) {
@@ -1262,7 +1248,6 @@ is(sInput) {
 }
 ```
 
-:::success
 As the code snippet shown above, you can see that there exists NO Magic Number, making it so easy to be understood.
 
 The whole `RobustCalculator` is implemented in this kind of style, so one should see many `Enum` definitions at the front of the implementation:
@@ -1306,7 +1291,6 @@ val inst = RegInit(doHalt)
 ```
 
 Utilize the `_` of scala, we successfully generate all the states we need for `sParse`, which we're going to introduce in the next section.
-:::
 
 #### Parse state
 
@@ -1332,9 +1316,7 @@ graph TD
 
 and the trivial state (registor: `inst`) for each `sPs` state is:
 
-:::info
 The naming of states come from the implementation of software version.
-:::
 
 * State diagram of `(`
     ```mermaid
@@ -1426,11 +1408,9 @@ Nice, then we can verify the function of `RobustCalculator`, which makes it trul
 
 Just like `GoldenCalculatorTester`, we have `singleTest` that conduct one test given some `((input, output), index)`.
 
-:::success
 There is a trick here to compare the result of output and golden, as what we commented inline!
-:::
 
-```scala=
+```scala
 def singleTest =
   (singleCase: ((String, BigInt), Int)) => {
     val input  = singleCase._1._1
@@ -1499,7 +1479,7 @@ Then you know that the problem is that the output width argument of `RobustCalcu
 
 As what `RobustCalculator` is documented, please instantiate with appropriate arguments:
 
-```scala=
+```scala
 /**
  * A calculator robust enough to handle `+` `-` `*`
  * `(` `)` and unary version of `+` `-`, fully
@@ -1525,11 +1505,9 @@ class RobustCalculator
 
 The current arguments of `RobustCalculator` is determined by statistic analysis provided by `GoldenCalculator`.
 
-:::success
 This is exactly one of the advantage of software modeling!
 
 Cooperate with full-parameterized hardware, we can use statistic analysis result provided by modeling to determine the arguments of hardware to be instantiated.
-:::
 
 #### Testbench
 
@@ -1552,7 +1530,7 @@ Exit Code: 0
 
 The normal test and random test is like:
 
-```scala=
+```scala
 // in class RobustCalculatorTest in RobustCalculatorTest.scala
 val tests = Seq(
     "="                         -> BigInt(0),
@@ -1574,13 +1552,10 @@ println("Running random tests...")
 randTests.zipWithIndex.foreach(singleTest)
 ```
 
-:::info
 Since we've implemented `GoldenCalculatorTester`, we can reuse the random testbench directly.
 
 At the same time, take the advantage of functional programming of scala, our testbench is implemented simply and elegantly :)
-:::
 
-:::success
 P.s. to use customized arguments when instantiating `RobustCalculator`, one should override the default arguments of `RobustCalculator` here:
 
 ```diff=
@@ -1593,13 +1568,12 @@ P.s. to use customized arguments when instantiating `RobustCalculator`, one shou
    }
  }
 ```
-:::
 
 #### Testbench of `Hw5-2-{1,2,3}`
 
 With `RobustCalculator`, to pass the testbench of `NetIntGenTest`, `LongCalTest` and `CpxCalTest` is like having a dimension reduction weapon...
 
-```scala=
+```scala
 object NegIntGenTest extends App {
   Driver.execute(args, () => new RobustCalculator) {
     c: RobustCalculator => new NegIntGenTest(c)
@@ -1703,7 +1677,7 @@ This is the helper module that can convert a `UInt` to `Vec` of `UInt` inline.
 
 For example of the usage:
 
-```scala=
+```scala
 // in NumGuess.scala
 val digitWidth = 4
 val digitCnt   = 4
@@ -1720,7 +1694,7 @@ val guessVec =
 
 and the implementation:
 
-```scala=
+```scala
 class UInt2Vec(cnt: Int, width: Int)
     extends Module {
   val io = IO(new Bundle {
@@ -1761,7 +1735,7 @@ When `PRNG` generates a new puzzle, we should satisfy the requirements:
 
 Given a vector of registers of current output `rgs` and next value of them `nxgRgVec`:
 
-```scala=
+```scala
 // registers
 val rgs = RegInit(
   VecInit(Seq(0x5, 0x3, 0x7, 0x8).map(n =>
@@ -1773,9 +1747,7 @@ val nxtRgVec =
   UInt2Vec(digitCnt, digitWidth)(nxtRgs)
 ```
 
-:::success
 Notice that we initialize `rgs` with `<LSB> (0x5, 0x3, 0x7, 0x8) <MSB>` is because `rgs` should be `0b1000_0111_0011_0101`.
-:::
 
 Let's describe how we deal with them.
 
@@ -1783,7 +1755,7 @@ Let's describe how we deal with them.
 
 Simply check whether the output value is in correct range **in functional programming manners**.
 
-```scala=
+```scala
 val isInRange = nxtRgVec
   .map { case n => n <= 9.U }
   .reduce((a, b) => a & b)
@@ -1793,7 +1765,7 @@ val isInRange = nxtRgVec
 
 Use the `combination` method of `Iterator`, we can elegantly generate the combination of a list, check equivalency of each two elements and check whether all combination satisfy our needs, **in functional programming manners**.
 
-```scala=
+```scala
 val noReputation = nxtRgVec
   .combinations(2)
   .map(e => e(0) =/= e(1))
@@ -1835,7 +1807,7 @@ So rather than masking the out-of-range output to make it valid, if we just bypa
 
 We just use two states: `sIdle` and `sGen`. Put `ready` down when (current state is `sIdle` and `io.gen`) or (current state is `sGen` and `isValid` is `false`), otherwise `ready` is up and `puzzle` should be whta we desire.
 
-```scala=
+```scala
 class PRNG(seed: Int) extends Module {
   ...
 
@@ -1885,22 +1857,20 @@ test PRNG Success: 0 tests passed in 2353 cycles in 0.058146 seconds 40467.29 Hz
 
 The key of `NumGuess` module is to count `io.A` and `io.B` correctly. This requires to compare two lists and count the existence of equivalence. We can achieve this in again, **functional programming manners**.
 
-```scala=
+```scala
 def countSame(ls: Seq[(UInt, UInt)]) = {
   ls.map { case (a, b) => (a === b).asUInt() }
     .reduce((a, b) => (0.U(3.W) | a) + b)
 }
 ```
 
-:::success
 Note: there is a trick when doing reduction: `(0.U(3.W) | a) + b`, in which a OR with `0.U(3.W)` is for expanding the width of `a` to accommodate a value up to $4$.
-:::
 
 ### Implementation
 
 With the trick of our beauty: **functional programming** ([ref 1](https://stackoverflow.com/questions/27101500/scala-permutations-using-two-lists#comment107534190_56796943), [ref 2](https://stackoverflow.com/questions/7949785/scalas-for-comprehension-if-statements)), we can count `io.A`, `io.B` so easily even in hardware manners.
 
-```scala=
+```scala
 PRNG(seed)(io.gen, io.ready, io.puzzle)
 val guessVec =
   UInt2Vec(digitCnt, digitWidth)(io.guess)
@@ -1917,7 +1887,7 @@ Elegant!
 
 Speaking for the state diagram... well, simple enough to just see the code. The simplicity is due to that the calculation of `io.A` and `io.B` can be finished in a single cycle.
 
-```scala=
+```scala
 val sIdle :: sGuess :: Nil = Enum(2)
 val state                  = RegInit(sIdle)
 
